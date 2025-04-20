@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Почта - Социальная сеть</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            display: flex;
+            gap: 20px;
+        }
+        
+        /* Шапка */
+        .mail-header {
+            background-color: #4267B2;
+            color: white;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .mail-header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .mail-header h1 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .mail-search {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
+            width: 300px;
+        }
+        
+        /* Боковая панель */
+        .mail-sidebar {
+            width: 250px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            padding: 15px;
+            height: fit-content;
+        }
+        
+        .mail-folders {
+            list-style: none;
+        }
+        
+        .mail-folder {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .mail-folder:hover {
+            background-color: #f0f2f5;
+        }
+        
+        .mail-folder.active {
+            background-color: #e7f3ff;
+            color: #1877f2;
+            font-weight: bold;
+        }
+        
+        .mail-folder-count {
+            margin-left: auto;
+            background-color: #e4e6eb;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 12px;
+        }
+        
+        .mail-folder.active .mail-folder-count {
+            background-color: #d8e4f5;
+        }
+        
+        /* Основная область писем */
+        .mail-main {
+            flex: 1;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .mail-toolbar {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .mail-btn {
+            padding: 8px 12px;
+            border-radius: 5px;
+            background-color: #f0f2f5;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .mail-btn:hover {
+            background-color: #e4e6eb;
+        }
+        
+        .mail-btn.primary {
+            background-color: #1877f2;
+            color: white;
+        }
+        
+        .mail-btn.primary:hover {
+            background-color: #166fe5;
+        }
+        
+        .mail-list {
+            list-style: none;
+        }
+        
+        .mail-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            gap: 15px;
+            cursor: pointer;
+        }
+        
+        .mail-item:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        .mail-item.unread {
+            background-color: #f0f7ff;
+        }
+        
+        .mail-item.selected {
+            background-color: #e7f3ff;
+        }
+        
+        .mail-checkbox {
+            margin-right: 5px;
+        }
+        
+        .mail-sender-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ddd;
+            background-size: cover;
+            flex-shrink: 0;
+        }
+        
+        .mail-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .mail-sender {
+            font-weight: bold;
+            margin-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .mail-time {
+            color: #65676B;
+            font-size: 12px;
+        }
+        
+        .mail-subject {
+            font-weight: bold;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .mail-preview {
+            color: #65676B;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .mail-star {
+            color: #d4d6da;
+            cursor: pointer;
+            font-size: 18px;
+            align-self: center;
+        }
+        
+        .mail-star.starred {
+            color: #ffc107;
+        }
+        
+        /* Модальное окно письма */
+        .mail-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            overflow: auto;
+        }
+        
+        .mail-modal-content {
+            background-color: #fff;
+            margin: 40px auto;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            animation: modalFadeIn 0.3s;
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .mail-modal-header {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .mail-modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .mail-modal-close {
+            color: #65676B;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .mail-modal-close:hover {
+            color: #333;
+        }
+        
+        .mail-modal-body {
+            padding: 20px;
+        }
+        
+        .mail-modal-sender {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .mail-modal-sender-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #ddd;
+            background-size: cover;
+        }
+        
+        .mail-modal-sender-info {
+            flex: 1;
+        }
+        
+        .mail-modal-sender-name {
+            font-weight: bold;
+        }
+        
+        .mail-modal-sender-email {
+            color: #65676B;
+            font-size: 14px;
+        }
+        
+        .mail-modal-meta {
+            color: #65676B;
+            font-size: 14px;
+            margin-bottom: 20px;
+            padding-left: 60px;
+        }
+        
+        .mail-modal-text {
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .mail-modal-attachments {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        .mail-modal-attachment {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            width: fit-content;
+            cursor: pointer;
+        }
+        
+        .mail-modal-attachment:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .mail-modal-attachment-icon {
+            font-size: 24px;
+            color: #65676B;
+        }
+        
+        .mail-modal-footer {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Окно просмотра вложений */
+        .attachment-preview-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+        
+        .attachment-preview-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .attachment-preview-content img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        
+        .close-preview {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+        }
+        
+        /* Адаптация */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .mail-sidebar {
+                width: 100%;
+            }
+            
+            .mail-search {
+                width: 200px;
+            }
+            
+            .mail-modal-content {
+                width: 95%;
+                margin: 20px auto;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Шапка почты -->
+    <header class="mail-header">
+        <div class="mail-header-content">
+            <h1><i class="fas fa-envelope"></i> Почта</h1>
+            <input type="text" class="mail-search" placeholder="Поиск в почте...">
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Боковая панель -->
+        <aside class="mail-sidebar">
+            <button class="mail-btn primary" style="width: 100%; margin-bottom: 20px;">
+                <i class="fas fa-pen"></i> Написать
+            </button>
+            
+            <ul class="mail-folders">
+                <li class="mail-folder active" data-folder="inbox" onclick="setActiveFolder('inbox')">
+                    <i class="fas fa-inbox"></i> Входящие
+                    <span class="mail-folder-count" id="inbox-count">12</span>
+                </li>
+                <li class="mail-folder" data-folder="sent" onclick="setActiveFolder('sent')">
+                    <i class="fas fa-paper-plane"></i> Отправленные
+                    <span class="mail-folder-count" id="sent-count">5</span>
+                </li>
+                <li class="mail-folder" data-folder="starred" onclick="setActiveFolder('starred')">
+                    <i class="fas fa-star"></i> Избранное
+                    <span class="mail-folder-count" id="starred-count">3</span>
+                </li>
+                <li class="mail-folder" data-folder="trash" onclick="setActiveFolder('trash')">
+                    <i class="fas fa-trash"></i> Корзина
+                    <span class="mail-folder-count" id="trash-count">7</span>
+                </li>
+            </ul>
+            
+            <div style="margin-top: 20px;">
+                <h3 style="font-size: 16px; margin-bottom: 10px;">Метки</h3>
+                <ul class="mail-folders">
+                    <li class="mail-folder">
+                        <i class="fas fa-circle" style="color: #42b72a;"></i> Работа
+                    </li>
+                    <li class="mail-folder">
+                        <i class="fas fa-circle" style="color: #ffc107;"></i> Личное
+                    </li>
+                    <li class="mail-folder">
+                        <i class="fas fa-circle" style="color: #f02849;"></i> Важное
+                    </li>
+                </ul>
+            </div>
+        </aside>
+        
+        <!-- Основная область -->
+        <main class="mail-main">
+            <!-- Панель инструментов -->
+            <div class="mail-toolbar">
+                <button class="mail-btn">
+                    <i class="fas fa-redo"></i>
+                </button>
+                <button class="mail-btn">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div style="flex: 1;"></div>
+                <span style="font-size: 14px; color: #65676B;">1-10 из <span id="total-emails">124</span></span>
+                <button class="mail-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="mail-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <!-- Список писем -->
+            <ul class="mail-list" id="email-list">
+                <!-- Письма будут отображаться здесь -->
+            </ul>
+        </main>
+    </div>
+
+    <!-- Модальное окно письма -->
+    <div id="mailModal" class="mail-modal">
+        <div class="mail-modal-content">
+            <div class="mail-modal-header">
+                <div class="mail-modal-title" id="mailModalTitle">Приглашение на мероприятие</div>
+                <span class="mail-modal-close" onclick="closeMailModal()">&times;</span>
+            </div>
+            <div class="mail-modal-body">
+                <div class="mail-modal-sender">
+                    <div class="mail-modal-sender-avatar" id="mailModalAvatar"></div>
+                    <div class="mail-modal-sender-info">
+                        <div class="mail-modal-sender-name" id="mailModalSender">Мария Смирнова</div>
+                        <div class="mail-modal-sender-email" id="mailModalEmail">m.smirnova@example.com</div>
+                    </div>
+                </div>
+                <div class="mail-modal-meta">
+                    <span>Кому: мне</span> | 
+                    <span id="mailModalTime">10:30, 20 мая 2023</span>
+                </div>
+                <div class="mail-modal-text" id="mailModalText">
+                    <p>Привет!</p>
+                    <p>Хочу пригласить тебя на открытие нашего нового арт-пространства "Галерея 21" в эту субботу, 27 мая, в 18:00.</p>
+                </div>
+                <div class="mail-modal-attachments" id="mailModalAttachments">
+                    <h3>Вложения</h3>
+                    <p>Нет вложений</p>
+                </div>
+            </div>
+            <div class="mail-modal-footer">
+                <button class="mail-btn">
+                    <i class="fas fa-reply"></i> Ответить
+                </button>
+                <button class="mail-btn">
+                    <i class="fas fa-share"></i> Переслать
+                </button>
+                <button class="mail-btn">
+                    <i class="fas fa-trash"></i> Удалить
+                </button>
+                <div style="flex: 1;"></div>
+                <button class="mail-btn">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для просмотра вложений -->
+    <div id="attachmentPreviewModal" class="attachment-preview-modal">
+        <span class="close-preview" onclick="closeAttachmentPreview()">&times;</span>
+        <div class="attachment-preview-content">
+            <img id="previewImage" src="" alt="Превью вложения">
+        </div>
+    </div>
+
+    <script>
+        // Данные писем с указанием разделов
+        const emails = [
+            // Входящие
+            {
+                id: 1,
+                folder: 'inbox',
+                avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+                sender: 'Мария Смирнова',
+                email: 'm.smirnova@example.com',
+                time: '10:30',
+                date: '20 мая 2023',
+                subject: 'Приглашение на мероприятие',
+                preview: 'Привет! Хочу пригласить тебя на открытие нашего нового арт-пространства в эту субботу...',
+                text: `<p>Привет!</p>
+                       <p>Хочу пригласить тебя на открытие нашего нового арт-пространства "Галерея 21" в эту субботу, 27 мая, в 18:00.</p>
+                       <p>Мы подготовили интересную программу:</p>
+                       <ul style="margin: 10px 0 10px 20px;">
+                           <li>Открытие выставки современных художников</li>
+                           <li>Живые выступления музыкантов</li>
+                           <li>Фуршет и свободное общение</li>
+                       </ul>
+                       <p>Адрес: ул. Творческая, 21 (бывшее здание фабрики).</p>
+                       <p>Буду рада тебя видеть! Пожалуйста, дай знать, сможешь ли ты прийти.</p>
+                       <p>С наилучшими пожеланиями,<br>Мария</p>`,
+                attachments: [
+                    { 
+                        type: 'image', 
+                        name: 'Приглашение.jpg', 
+                        size: '2.4 MB',
+                        url: 'https://i.postimg.cc/XY87VrHg/Leonardo-Diffusion-XL-cute-white-cat-with-opened-mouth-winking-0.jpg'
+                    }
+                ],
+                starred: true,
+                unread: true
+            },
+			   {
+                id: 1,
+                folder: 'inbox',
+                avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+                sender: 'Мария Смирнова',
+                email: 'm.smirnova@example.com',
+                time: '10:30',
+                date: '20 мая 2023',
+                subject: 'Приглашение на мероприятие',
+                preview: 'Привет! Хочу пригласить тебя на открытие нашего нового арт-пространства в эту субботу...',
+                text: `<p>Привет!</p>
+                       <p>Хочу пригласить тебя на открытие нашего нового арт-пространства "Галерея 21" в эту субботу, 27 мая, в 18:00.</p>
+                       <p>Мы подготовили интересную программу:</p>
+                       <ul style="margin: 10px 0 10px 20px;">
+                           <li>Открытие выставки современных художников</li>
+                           <li>Живые выступления музыкантов</li>
+                           <li>Фуршет и свободное общение</li>
+                       </ul>
+                       <p>Адрес: ул. Творческая, 21 (бывшее здание фабрики).</p>
+                       <p>Буду рада тебя видеть! Пожалуйста, дай знать, сможешь ли ты прийти.</p>
+                       <p>С наилучшими пожеланиями,<br>Мария</p>`,
+                attachments: [
+                    { 
+                        type: 'image', 
+                        name: 'Приглашение.jpg', 
+                        size: '2.4 MB',
+                        url: 'https://example.com/images/invite.jpg'
+                    }
+                ],
+                starred: true,
+                unread: true
+            },   {
+                id: 1,
+                folder: 'inbox',
+                avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+                sender: 'Мария Смирнова',
+                email: 'm.smirnova@example.com',
+                time: '10:30',
+                date: '20 мая 2023',
+                subject: 'Приглашение на мероприятие',
+                preview: 'Привет! Хочу пригласить тебя на открытие нашего нового арт-пространства в эту субботу...',
+                text: `<p>Привет!</p>
+                       <p>Хочу пригласить тебя на открытие нашего нового арт-пространства "Галерея 21" в эту субботу, 27 мая, в 18:00.</p>
+                       <p>Мы подготовили интересную программу:</p>
+                       <ul style="margin: 10px 0 10px 20px;">
+                           <li>Открытие выставки современных художников</li>
+                           <li>Живые выступления музыкантов</li>
+                           <li>Фуршет и свободное общение</li>
+                       </ul>
+                       <p>Адрес: ул. Творческая, 21 (бывшее здание фабрики).</p>
+                       <p>Буду рада тебя видеть! Пожалуйста, дай знать, сможешь ли ты прийти.</p>
+                       <p>С наилучшими пожеланиями,<br>Мария</p>`,
+                attachments: [
+                    { 
+                        type: 'image', 
+                        name: 'Приглашение.jpg', 
+                        size: '2.4 MB',
+                        url: 'https://example.com/images/invite.jpg'
+                    }
+                ],
+                starred: true,
+                unread: true
+            },
+            // Отправленные
+            {
+                id: 2,
+                folder: 'sent',
+                avatar: '',
+                sender: 'Я',
+                email: 'my@email.com',
+                time: '09:15',
+                date: '19 мая 2023',
+                subject: 'Черновик проекта',
+                preview: 'Отправляю тебе черновик проекта для ознакомления...',
+                text: `<p>Привет,</p>
+                       <p>Отправляю тебе черновик проекта для ознакомления. Пожалуйста, проверь разделы 3 и 5.</p>
+                       <p>Мы можем обсудить это завтра на встрече в 11:00.</p>
+                       <p>С уважением,<br>Вы</p>`,
+                attachments: [
+                    { 
+                        type: 'pdf', 
+                        name: 'Проект.pdf', 
+                        size: '3.1 MB',
+                        url: 'https://example.com/docs/project.pdf'
+                    }
+                ],
+                starred: false,
+                unread: false
+            },
+            // Корзина
+            {
+                id: 3,
+                folder: 'trash',
+                avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+                sender: 'Алексей Петров',
+                email: 'a.petrov@example.com',
+                time: 'Вчера',
+                date: '19 мая 2023',
+                subject: 'Устаревшее предложение',
+                preview: 'Это письмо больше не актуально...',
+                text: `<p>Это письмо было удалено и больше не актуально.</p>`,
+                attachments: [],
+                starred: false,
+                unread: false
+            },
+            // Ещё письма...
+        ];
+
+        // Текущий активный раздел
+        let currentFolder = 'inbox';
+
+        // Функция переключения разделов
+        function setActiveFolder(folder) {
+            currentFolder = folder;
+            
+            // Обновляем активный пункт в меню
+            document.querySelectorAll('.mail-folder').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.folder === folder) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Показываем письма выбранного раздела
+            renderEmails();
+        }
+
+        // Функция отрисовки писем
+        function renderEmails() {
+            const emailList = document.getElementById('email-list');
+            emailList.innerHTML = '';
+            
+            // Фильтруем письма по текущему разделу
+            let filteredEmails = emails.filter(email => {
+                if (currentFolder === 'starred') {
+                    return email.starred;
+                }
+                return email.folder === currentFolder;
+            });
+            
+            // Обновляем счетчик
+            document.getElementById('total-emails').textContent = filteredEmails.length;
+            
+            // Отрисовываем письма
+            filteredEmails.forEach((email, index) => {
+                const emailItem = document.createElement('li');
+                emailItem.className = `mail-item ${email.unread ? 'unread' : ''}`;
+                emailItem.onclick = () => openMailModal(index);
+                
+                emailItem.innerHTML = `
+                    <input type="checkbox" class="mail-checkbox">
+                    <div class="mail-sender-avatar" style="background-image: ${email.avatar ? `url('${email.avatar}')` : 'none'};
+                        ${!email.avatar ? `background-color: ${getRandomColor()}; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;` : ''}">
+                        ${!email.avatar ? email.sender.charAt(0) : ''}
+                    </div>
+                    <div class="mail-content">
+                        <div class="mail-sender">
+                            <span>${email.sender}</span>
+                            <span class="mail-time">${email.time}${email.date ? ', ' + email.date : ''}</span>
+                        </div>
+                        <div class="mail-subject">${email.subject}</div>
+                        <div class="mail-preview">${email.preview}</div>
+                    </div>
+                    <i class="fas fa-star mail-star ${email.starred ? 'starred' : ''}" 
+                       onclick="event.stopPropagation(); toggleStar(${email.id}, event)"></i>
+                `;
+                
+                emailList.appendChild(emailItem);
+            });
+        }
+
+        // Функция для открытия модального окна с письмом
+        function openMailModal(index) {
+            const filteredEmails = emails.filter(email => {
+                if (currentFolder === 'starred') return email.starred;
+                return email.folder === currentFolder;
+            });
+            
+            const email = filteredEmails[index];
+            const modal = document.getElementById('mailModal');
+            
+            // Заполняем модальное окно данными письма
+            document.getElementById('mailModalTitle').textContent = email.subject;
+            document.getElementById('mailModalSender').textContent = email.sender;
+            document.getElementById('mailModalEmail').textContent = email.email;
+            document.getElementById('mailModalTime').textContent = `${email.time}, ${email.date}`;
+            document.getElementById('mailModalText').innerHTML = email.text;
+            
+            // Устанавливаем аватар
+            const avatar = document.getElementById('mailModalAvatar');
+            if (email.avatar) {
+                avatar.style.backgroundImage = `url('${email.avatar}')`;
+                avatar.textContent = '';
+            } else {
+                avatar.style.backgroundImage = '';
+                avatar.textContent = email.sender.charAt(0);
+                avatar.style.backgroundColor = getRandomColor();
+                avatar.style.display = 'flex';
+                avatar.style.alignItems = 'center';
+                avatar.style.justifyContent = 'center';
+                avatar.style.color = 'white';
+                avatar.style.fontWeight = 'bold';
+            }
+            
+            // Очищаем предыдущие вложения
+            const attachmentsContainer = document.getElementById('mailModalAttachments');
+            attachmentsContainer.innerHTML = '<h3>Вложения</h3>';
+            
+            // Добавляем вложения, если они есть
+            if (email.attachments && email.attachments.length > 0) {
+                email.attachments.forEach(attach => {
+                    const attachment = document.createElement('div');
+                    attachment.className = 'mail-modal-attachment';
+                    attachment.onclick = (e) => {
+                        if (e.target.classList.contains('fa-download')) return;
+                        if (attach.type === 'image') {
+                            openAttachmentPreview(attach.url);
+                        } else {
+                            window.open(attach.url, '_blank');
+                        }
+                    };
+                    
+                    const icon = document.createElement('i');
+                    icon.className = `fas fa-file-${attach.type === 'image' ? 'image' : attach.type} mail-modal-attachment-icon`;
+                    
+                    const info = document.createElement('div');
+                    const name = document.createElement('div');
+                    name.textContent = attach.name;
+                    const size = document.createElement('div');
+                    size.style.fontSize = '12px';
+                    size.style.color = '#65676B';
+                    size.textContent = attach.size;
+                    
+                    info.appendChild(name);
+                    info.appendChild(size);
+                    
+                    const download = document.createElement('i');
+                    download.className = 'fas fa-download';
+                    download.style.color = '#65676B';
+                    download.style.cursor = 'pointer';
+                    download.onclick = (e) => {
+                        e.stopPropagation();
+                        window.open(attach.url, '_blank');
+                    };
+                    
+                    attachment.appendChild(icon);
+                    attachment.appendChild(info);
+                    attachment.appendChild(download);
+                    
+                    attachmentsContainer.appendChild(attachment);
+                });
+            } else {
+                attachmentsContainer.innerHTML += '<p>Нет вложений</p>';
+            }
+            
+            // Помечаем письмо как прочитанное
+            if (email.unread) {
+                email.unread = false;
+                renderEmails();
+            }
+            
+            // Показываем модальное окно
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Функция для закрытия модального окна
+        function closeMailModal() {
+            document.getElementById('mailModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Функция для просмотра вложения (картинки)
+        function openAttachmentPreview(imageUrl) {
+            const modal = document.getElementById('attachmentPreviewModal');
+            const img = document.getElementById('previewImage');
+            
+            img.src = imageUrl;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAttachmentPreview() {
+            document.getElementById('attachmentPreviewModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Функция для переключения звездочки (избранное)
+        function toggleStar(emailId, event) {
+            if (event) event.stopPropagation();
+            const email = emails.find(e => e.id === emailId);
+            if (email) {
+                email.starred = !email.starred;
+                renderEmails();
+            }
+        }
+
+        // Функция для генерации случайного цвета
+        function getRandomColor() {
+            const colors = ['#4267B2', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Закрытие модальных окон при клике вне их
+        window.onclick = function(event) {
+            if (event.target.className === 'mail-modal') {
+                closeMailModal();
+            }
+            if (event.target.className === 'attachment-preview-modal') {
+                closeAttachmentPreview();
+            }
+        };
+
+        // Закрытие модальных окон при нажатии Esc
+        document.onkeydown = function(event) {
+            if (event.key === 'Escape') {
+                closeMailModal();
+                closeAttachmentPreview();
+            }
+        };
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            setActiveFolder('inbox');
+            updateFolderCounts();
+        });
+
+        // Обновляем счетчики писем в разделах
+        function updateFolderCounts() {
+            document.getElementById('inbox-count').textContent = 
+                emails.filter(e => e.folder === 'inbox').length;
+            document.getElementById('sent-count').textContent = 
+                emails.filter(e => e.folder === 'sent').length;
+            document.getElementById('starred-count').textContent = 
+                emails.filter(e => e.starred).length;
+            document.getElementById('trash-count').textContent = 
+                emails.filter(e => e.folder === 'trash').length;
+        }
+    </script>
+</body>
+</html>
